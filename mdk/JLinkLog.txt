@@ -1,0 +1,28 @@
+
+T1090 000:759 SEGGER J-Link V4.15n (beta) Log File (0000ms, 0740ms total)
+T1090 000:759 DLL Compiled: Jun 18 2010 19:55:09 (0000ms, 0740ms total)
+T1090 000:759 Logging started @ 2015-05-18 20:36 (0000ms, 0740ms total)
+T1090 000:759 JLINK_SetWarnOutHandler(...) (0000ms, 0740ms total)
+T1090 000:759 JLINK_OpenEx(...)
+Firmware: J-Link ARM V8 compiled May 20 2010 17:07:46
+Hardware: V8.00
+S/N: 17935099
+Feature(s): RDI,FlashDL,FlashBP,JFlash  returns O.K. (0075ms, 0740ms total)
+T1090 000:834 JLINK_SetErrorOutHandler(...) (0000ms, 0815ms total)
+T1090 000:849 JLINK_ExecCommand("ProjectFile = "C:\Projects\printer\Printer\mdk\JLinkSettings.ini"", ...)  returns 0x00 (0000ms, 0815ms total)
+T1090 000:854 JLINK_ExecCommand("DisableConnectionTimeout", ...)  returns 0x00 (0000ms, 0815ms total)
+T1090 000:860 JLINK_TIF_Select(JLINKARM_TIF_SWD)  returns 0x00 (0007ms, 0815ms total)
+T1090 000:867 JLINK_SetSpeed(2000) (0004ms, 0822ms total)
+T1090 000:871 JLINK_GetHardwareVersion()  returns 0x13880 (0000ms, 0826ms total)
+T1090 000:871 JLINK_GetDLLVersion()  returns 41514 (0000ms, 0826ms total)
+T1090 000:871 JLINK_GetFirmwareString(...) (0000ms, 0826ms total)
+T1090 000:877 JLINK_GetDLLVersion()  returns 41514 (0000ms, 0826ms total)
+T1090 000:877 JLINK_GetCompileDateTime() (0000ms, 0826ms total)
+T1090 000:879 JLINK_GetFirmwareString(...) (0000ms, 0826ms total)
+T1090 000:881 JLINK_GetHardwareVersion()  returns 0x13880 (0000ms, 0826ms total)
+T1090 000:887 JLINK_Reset() >0x108 TIF> >0x33 TIF> >0x33 TIF> >0x35 TIF> >0x33 TIF> >0x108 TIF> >0x33 TIF>
+  ***** Error: Parity error (Data = 0xFFFFFFFF, ReceivedParity = 1) (0044ms, 0826ms total)
+T1090 000:887  >0x33 TIF> >0x35 TIF> >0x33 TIF>No matching core found. (1804ms, 0826ms total)
+T1090 002:694 JLINK_JTAG_StoreRaw(..., 0x108 Bits)  returns 0x00 (0000ms, 2630ms total)
+T1090 002:694 JLINK_JTAG_GetU32(BitPos = 227) >0x108 TIF>  returns 0xFFFFFFFF (0004ms, 2630ms total)
+T1090 003:739 JLINK_Close() (0261ms, 2634ms total)
