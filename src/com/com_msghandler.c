@@ -11,10 +11,10 @@
 #include "printer.h"
 
 /* 最大报文长度 */
-#define COM_MAX_PACKET_LENGTH 1024
+#define COM_MAX_PACKET_LENGTH 8192
 
-/* 接收数据最大等待时间 10秒 */
-#define COM_MAXWAIT_TIME  10 * HZ
+/* 接收数据最大等待时间 20秒 */
+#define COM_MAXWAIT_TIME  20 * HZ
 
 /* 命令 */
 #define COM_CMDSTR_HEARTBEAT   "\x12\x13"    /* 心跳 */
@@ -48,7 +48,7 @@ const char* g_cmdStr[] = {
     COM_CMDSTR_OK,
 };
 
-static char g_msgBuf[2048];
+static char g_msgBuf[COM_MAX_PACKET_LENGTH];
 
 /* 解析命令 */
 static int _parserCmd(char* msgBuf, char** pparg)
@@ -99,7 +99,7 @@ static int _cmdDoPrint(char* arg)
 	 }
 	
 	 /* 打时间戳，开始接收数据 */
-	 timestamp = g_jiffies;
+	 timestamp = g_jiffies + COM_MAXWAIT_TIME;
 	 for (i = 0; i < length;){
 		 ret = USARTIO_RecvChar(GSM_USART_PORT, &cbuf);
 		 if (ERROR_SUCCESS == ret){
@@ -107,7 +107,7 @@ static int _cmdDoPrint(char* arg)
 		 }
 	
 		 /* 如果等待超时，不完整也退出 */
-		 if (time_after(g_jiffies, timestamp + COM_MAXWAIT_TIME)){
+		 if (time_after(g_jiffies, timestamp)){
 			 break;
 		 }
 	 }
