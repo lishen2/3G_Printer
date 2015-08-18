@@ -123,6 +123,8 @@ void GSM_Init(void)
 /* 设置模块在指定毫秒后重启 */
 static void _gsmSetReset(unsigned int msec)
 {
+	printf("Module not response, reset after %d ms.\n", msec);
+
 	g_resetTimestamp = g_jiffies + (msec/10);
 	g_needReset = BOOL_TRUE;
 
@@ -138,6 +140,8 @@ static void _gsmClearReset(void)
 /* 执行模块重启 */
 static void _gsmDoReset(void)
 {
+	printf("Reset module\n");
+
 	GPIO_ResetBits(GSM_RESET_PORT, GSM_RESET_PIN);
 	delay_ms(200);
 	GPIO_SetBits(GSM_RESET_PORT, GSM_RESET_PIN);
@@ -556,7 +560,7 @@ void GSM_PowerOn(void)
 
         /* 按键拉低，定时器关闭 */
 		GPIO_SetBits(GSM_POWERKEY_PORT, GSM_POWERKEY_PIN);
-        delay_ms(1500);
+        delay_ms(2000);
         GPIO_ResetBits(GSM_POWERKEY_PORT, GSM_POWERKEY_PIN); 
 	} 
 

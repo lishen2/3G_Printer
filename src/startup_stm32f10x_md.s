@@ -24,6 +24,10 @@
 ; INFORMATION CONTAINED HEREIN IN CONNECTION WITH THEIR PRODUCTS.
 ;*******************************************************************************
 
+;Programme Header
+                AREA    PROGRAMME_HDR, DATA, READONLY	
+				DCD     EntryPoint     ; Entry Address				
+
 ; Amount of memory (in bytes) allocated for Stack
 ; Tailor this value to your application needs
 ; <h> Stack Configuration
@@ -41,7 +45,7 @@ __initial_sp
 ;   <o>  Heap Size (in Bytes) <0x0-0xFFFFFFFF:8>
 ; </h>
 
-Heap_Size       EQU     0x00000200
+Heap_Size       EQU     0x00000000
 
                 AREA    HEAP, NOINIT, READWRITE, ALIGN=3
 __heap_base
@@ -53,7 +57,7 @@ __heap_limit
 
 
 ; Vector Table Mapped to Address 0 at Reset
-                AREA    RESET, DATA, READONLY
+                AREA    RESET, DATA, READONLY, ALIGN=9
                 EXPORT  __Vectors
                 EXPORT  __Vectors_End
                 EXPORT  __Vectors_Size
@@ -129,9 +133,6 @@ __Vectors_Size  EQU  __Vectors_End - __Vectors
 Reset_Handler    PROC
                  EXPORT  Reset_Handler             [WEAK]
      IMPORT  __main
-     IMPORT  SystemInit
-                 LDR     R0, =SystemInit
-                 BLX     R0
                  LDR     R0, =__main
                  BX      R0
                  ENDP
@@ -301,7 +302,23 @@ __user_initial_stackheap
                  ALIGN
 
                  ENDIF
-
+				 
+_SCB_VTOR       EQU   0xE000ED08
+; Entry point
+EntryPoint       PROC
+                 EXPORT  EntryPoint             [WEAK]
+     IMPORT  __main
+	 
+				LDR R0, =_SCB_VTOR
+				LDR R1, =__Vectors      ; Set vector table to monitor's own Vector
+				STR R1, [R0]	 
+				
+				LDR SP, =__initial_sp   ;Set SP
+				
+                 LDR     R0, =__main
+                 BX      R0
+                 ENDP				 
+				 			 
                  END
 
 ;******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE*****

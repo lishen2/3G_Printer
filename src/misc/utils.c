@@ -33,7 +33,7 @@ void delay_ms(int n)
 void HW_InitSysTick(void)
 {
     /* Setup SysTick Timer for 10 msec interrupts  */
-    if (SysTick_Config(SystemCoreClock / 100)) 
+    if (SysTick_Config(72000000 / 100)) 
     { 
         /* Capture error */ 
         while (1);

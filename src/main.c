@@ -19,6 +19,7 @@ int main()
 
     /* ÏÈÆô¶¯GSMÄ£¿é */
 	GSM_Init();
+	delay_ms(200);
     GSM_PowerOn();
     
 	//BUZ_Init();
