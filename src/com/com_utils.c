@@ -168,5 +168,41 @@ int CUTILS_ReadAndParserMsg(void* port,
     return ret;
 }
 
+/* 读取指定长度的数据 */
+int CUTILS_ReadData(void* port, unsigned char* buf, int bufsize, int timeout)
+{
+	u32 tm;
+    int ret;
+	u8 ch;
+	int cur;
+
+    /* 读取设备返回数据并进行解析 */
+	cur = 0;
+	tm = g_jiffies + timeout;
+    while(time_after(tm, g_jiffies)) {
+
+		WDG_Reload();
+
+        ret = USARTIO_RecvChar(port, &ch);
+        if (ERROR_SUCCESS != ret){
+			delay_ms(100);
+            continue;
+        }
+
+		if (cur < bufsize){
+			buf[cur++] = ch;
+		} 
+		
+		if (cur >= bufsize) {
+			break;
+		}
+    }
+
+	if (cur == bufsize){
+		return ERROR_SUCCESS;
+	} else {
+		return ERROR_FAILED;
+	}
+}
 
 

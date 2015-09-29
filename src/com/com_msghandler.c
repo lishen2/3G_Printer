@@ -13,29 +13,19 @@
 /* 最大报文长度 */
 #define COM_MAX_PACKET_LENGTH 8192
 
-/* 接收数据最大等待时间 20秒 */
-#define COM_MAXWAIT_TIME  20 * HZ
+/* 接收数据最大等待时间 30秒 */
+#define COM_MAXWAIT_TIME  30 * HZ
 
 /* 命令 */
-#define COM_CMDSTR_HEARTBEAT   "\x12\x13"    /* 心跳 */
-#define COM_CMDSTR_PRINT       "P"           /* 执行打印操作 */
-#define COM_CMDSTR_OK          "OK"          /* 服务器返回OK的状态 */
-
-/* 响应 */
-#define COM_RESSTR_SUCCESS  "OK\n"       /* 命令执行成功 */
-#define COM_RESSTR_ERROR    "ERROR\n"    /* 命令执行失败 */
-
-/* 发送成功的相应 */
-#define COM_RESPONSE_SUCCESS() \
-    USARTIO_SendString(GSM_USART_PORT, COM_RESSTR_SUCCESS);
-
-/* 发送失败的响应 */
-#define COM_RESPONSE_ERROR() \
-    USARTIO_SendString(GSM_USART_PORT, COM_RESSTR_ERROR);
+#define COM_CMDSTR_HEARTBEAT1  "\x12\x13"   /* 心跳 */
+#define COM_CMDSTR_HEARTBEAT2  "@#^"        /* 心跳 */
+#define COM_CMDSTR_PRINT       "P"          /* 执行打印操作 */
+#define COM_CMDSTR_OK          "OK"         /* 服务器返回OK的状态 */
 
 /* 通信命令token */
 enum ComCmdToken{
-    COM_CMDTOKEN_HEARTBEAT = 0,
+    COM_CMDTOKEN_HEARTBEAT1 = 0,
+	COM_CMDTOKEN_HEARTBEAT2,
     COM_CMDTOKEN_PRINT,
     COM_CMDTOKEN_OK,
     COM_CMDTOKEN_UNKNOWN = 100,
@@ -43,7 +33,8 @@ enum ComCmdToken{
 
 /* 需要和token一一对应 */
 const char* g_cmdStr[] = {
-    COM_CMDSTR_HEARTBEAT,
+    COM_CMDSTR_HEARTBEAT1,
+	COM_CMDSTR_HEARTBEAT2,
     COM_CMDSTR_PRINT,
     COM_CMDSTR_OK,
 };
@@ -84,6 +75,7 @@ static int _cmdDoPrint(char* arg)
     int i;
     int ret;
     unsigned char cbuf;
+	unsigned char status;
     int timestamp;
 
     if (NULL == arg){
@@ -95,12 +87,12 @@ static int _cmdDoPrint(char* arg)
 
 	if (length > COM_MAX_PACKET_LENGTH || length <= 0){
 		 printf("Print data length error [%u].\r\n", length);
-		 return ERROR_FAILED;
+		 return 1;
 	 }
-	
+
 	 /* 打时间戳，开始接收数据 */
-	 timestamp = g_jiffies + COM_MAXWAIT_TIME;
-	 for (i = 0; i < length;){
+	timestamp = g_jiffies + COM_MAXWAIT_TIME;
+	for (i = 0; i < length;){
 		 ret = USARTIO_RecvChar(GSM_USART_PORT, &cbuf);
 		 if (ERROR_SUCCESS == ret){
 			 g_msgBuf[i++] = cbuf;
@@ -110,27 +102,45 @@ static int _cmdDoPrint(char* arg)
 		 if (time_after(g_jiffies, timestamp)){
 			 break;
 		 }
-	 }
+	}
 	
-	 /* 如果接收成功，发送到打印机 */
-	 if (i == length){
-		 USARTIO_SendData(PRINT_USART_PORT, (unsigned char*)g_msgBuf, i);
-		 return ERROR_SUCCESS;
-	 } else {
-		 printf("Recving data timeout.\r\n");
-		 return ERROR_FAILED;
-	 }
+	/* 接收失败，退出 */
+	if (i != length){
+		printf("Recving data timeout.\r\n");
+		return 2;
+	}
+
+	/* 发送到打印机之前，首先判断是否有纸，如果缺纸直接退出，就不再向打印机发送了 */
+	status = PRINT_GetPrintStatus();
+	if (0 == status){
+		/* 返回 和打印通讯失败 */
+		printf("Query print status timeout.\r\n");
+		return 3;
+	} 
+	if (0 != (PRINT_STATUS_N1_OUTLINE & status)){
+		/* 返回 打印机缺纸 */
+		printf("Paper run out.\r\n");
+		return 4;
+	}
+
+	/* 如果接收成功，发送到打印机 */
+	USARTIO_SendData(PRINT_USART_PORT, (unsigned char*)g_msgBuf, i);
+
+	return ERROR_SUCCESS;
 }
 
 static void _cmdPrint(char* arg)
 {
+	char errmsg[16];
 	int ret;
 
 	ret = _cmdDoPrint(arg);
 	if (ERROR_SUCCESS == ret){
-		COM_RESPONSE_SUCCESS();
-	} else {
-		COM_RESPONSE_ERROR();
+		USARTIO_SendString(GSM_USART_PORT, "OK\n");
+	} else if (ret > 0) {
+		snprintf(errmsg, sizeof(errmsg), "ERROR:%d\n", ret);
+		errmsg[sizeof(errmsg) - 1] = 0;
+		USARTIO_SendString(GSM_USART_PORT, (unsigned char*)errmsg);
 	}
 
     return;
@@ -154,7 +164,8 @@ enum COM_ReciveResault COM_HandleMessage(void)
 
         switch(token)
         {
-            case COM_CMDTOKEN_HEARTBEAT:
+            case COM_CMDTOKEN_HEARTBEAT1:
+			case COM_CMDTOKEN_HEARTBEAT2:
             {
                 resault = COM_REC_RESAULT_HEARTBEAT;
                 break;

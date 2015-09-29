@@ -3,6 +3,7 @@
 #include "ringbuf.h"
 #include "usart_io.h"
 #include "printer.h"
+#include "com_utils.h"
 #include "com_gsm.h"
 #include "utils.h"
 
@@ -26,7 +27,6 @@ void PRINT_PrintStatus(void)
 	if (quality <= 0){
 		retn = snprintf(buf, sizeof(buf), "信号质量:未知\x0A");
 	} else {
-		quality = (quality * 100)/31;
 		retn = snprintf(buf, sizeof(buf), "信号质量:%d%%\x0A", quality);
 	}
     if (sizeof(buf) == retn){
@@ -54,6 +54,30 @@ void PRINT_PrintStatus(void)
 	   
 	USARTIO_SendData(PRINT_USART_PORT, "\x1D\x56\x41\x3C", 4);
 	return;   
+}
+
+/* 获取打印机状态 */
+u8 PRINT_GetPrintStatus(void)
+{
+	u8 status;
+	int ret;
+
+	/* 清除缓存 */
+	CUTILS_ConsumeBuf(PRINT_USART_PORT);
+
+	/* 发送命令 */
+	USARTIO_SendData(PRINT_USART_PORT, "\x10\x04\x01", 3);
+
+	/* 接收数据 */
+	ret = CUTILS_ReadData(PRINT_USART_PORT, &status, 1, 1000);
+	if (ERROR_SUCCESS != ret){
+		printf("Error read from printer.\r\n");
+		return 0;
+	}
+
+	printf("Read from printer[0x%hhx]\r\n", status);
+
+	return status;
 }
 
 

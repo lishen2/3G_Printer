@@ -2,6 +2,7 @@
 #include "stm32f10x.h"
 #include "utils.h"
 #include "com_gsm.h"
+#include "com_heartbeat.h"
 #include "led.h"
 #include "ringbuf.h"
 #include "usart_io.h"
@@ -50,6 +51,9 @@ int main()
 
 	/* 注册GSM处理函数 */
     GSM_RegStart();
+
+	/* 注册心跳函数， */
+	COM_RegHeartBeat();
 
 	/* 进入定时器循环 */
 	while(1){

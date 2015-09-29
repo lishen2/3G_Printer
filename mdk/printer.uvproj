@@ -529,6 +529,11 @@
               <FileType>1</FileType>
               <FilePath>..\src\com\com_msghandler.c</FilePath>
             </File>
+            <File>
+              <FileName>com_heartbeat.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\com\com_heartbeat.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1115,6 +1120,11 @@
               <FileName>com_msghandler.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\src\com\com_msghandler.c</FilePath>
+            </File>
+            <File>
+              <FileName>com_heartbeat.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\src\com\com_heartbeat.c</FilePath>
             </File>
           </Files>
         </Group>

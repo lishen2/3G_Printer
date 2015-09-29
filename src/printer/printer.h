@@ -7,5 +7,11 @@
 /* 打印当前状态 */
 void PRINT_PrintStatus(void);
 
+/* 是否离线 */
+#define PRINT_STATUS_N1_OUTLINE       (0x01 << 3)
+
+/* 获取打印机状态 */
+u8 PRINT_GetPrintStatus(void);
+
 #endif
 

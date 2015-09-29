@@ -276,7 +276,7 @@ int USARTIO_ReadLine(void* port, unsigned char* buf, int bufsize)
     return ret;
 }
 
-/* 初始化和通信模块通信使用的串口，使用串口2 */
+/* 调试和升级串口 */
 void USARTIO_InitUsart1(void)
 {
     NVIC_InitTypeDef NVIC_InitStructure;
@@ -338,7 +338,7 @@ void USARTIO_InitUsart1(void)
     return;
 }
 
-/* 初始化调试串口 */
+/* 打印机使用的串口，启用硬件流控 */
 void USARTIO_InitUsart2(void)
 {
     NVIC_InitTypeDef NVIC_InitStructure;
@@ -397,7 +397,7 @@ void USARTIO_InitUsart2(void)
     return;
 }
 
-/* 初始化调试串口 */
+/* 和通信模块通信的串口，不启用硬件流控 */
 void USARTIO_InitUsart3(void)
 {
     NVIC_InitTypeDef NVIC_InitStructure;

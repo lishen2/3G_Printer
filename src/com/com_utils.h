@@ -46,8 +46,8 @@ int CUTILS_ReadAndParserMsg(void* port,
 							int delay_time, 
 							int delay_count);
 
-/* 将数据发送蓝牙并保存SD卡 */
-void COM_SendAndSave(char* buf, int len);
+/* 读取指定长度的数据 */
+int CUTILS_ReadData(void* port, unsigned char* buf, int bufsize, int timeout);
 
 #endif
 

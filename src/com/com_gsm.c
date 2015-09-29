@@ -32,7 +32,7 @@
 #define GSM_WAIT_RESPONSE_COUNT      50
 
 /* 两次收到数据之间的最大间隔，超过次间隔则认为和服务器断开 */
-#define GSM_MAX_RECIVE_INTERVAL   60 * HZ
+#define GSM_MAX_RECIVE_INTERVAL   120 * HZ
 
 /* GSM模块的注册状态 */
 enum GSMRegStatus{
@@ -322,7 +322,15 @@ static int _retReadSignalQuality(void)
                             _parserCSQ,
                             &quality,
                             GSM_WAIT_RESPONSE_TIMEOUT, 
-                            GSM_WAIT_RESPONSE_COUNT);   
+                            GSM_WAIT_RESPONSE_COUNT); 
+
+	if (31 == quality){
+		quality = 100;
+	} else if (quality >= 2 && quality <= 30){
+		quality = (quality * 100) / 31;
+	} else {
+		quality = 0;
+	}
     
     return quality;
 }
@@ -345,7 +353,7 @@ static int _gsmEstablishIPConn(void)
     
     /* 关闭连接 */	
 	CUTILS_ConsumeBuf(GSM_USART_PORT);	  
-	USARTIO_SendString(GSM_USART_PORT, "AT+CIPCLOSE=0\r\n");
+	USARTIO_SendString(GSM_USART_PORT, "AT+CIPCLOSE=1\r\n");
 	CUTILS_WaitForResault(GSM_USART_PORT, 
  						  GSM_WAIT_RESPONSE_TIMEOUT, 
  						  GSM_WAIT_RESPONSE_COUNT); 
@@ -385,11 +393,12 @@ static int _gsmEstablishIPConn(void)
     /* 配置透传参数
     
     不自动建立连接
-    心跳发送间隔40秒
-    是否以文本发送
+    心跳发送间隔50秒
+    内部命令包不以16进制形式发送
+	500毫秒内没有收到数据，则进行发送
     */
     CUTILS_ConsumeBuf(GSM_USART_PORT); 
-    USARTIO_SendString(GSM_USART_PORT, "AT+CIPCFG=0,50,0,0,0,0\r\n");
+    USARTIO_SendString(GSM_USART_PORT, "AT+CIPCFG=0,50,0,500,0\r\n");
     ret = CUTILS_WaitForResault(GSM_USART_PORT, 
                                 GSM_WAIT_RESPONSE_TIMEOUT, 
                                 GSM_WAIT_RESPONSE_COUNT); 
@@ -399,6 +408,7 @@ static int _gsmEstablishIPConn(void)
 
     /* 设置心跳包
     心跳包内容为: 为@#^ */
+	/*
     CUTILS_ConsumeBuf(GSM_USART_PORT); 
     USARTIO_SendString(GSM_USART_PORT, "AT+CIPPACK=0,\"@#^\"\r\n");
     ret = CUTILS_WaitForResault(GSM_USART_PORT, 
@@ -406,7 +416,7 @@ static int _gsmEstablishIPConn(void)
                                 GSM_WAIT_RESPONSE_COUNT); 
 	if (ERROR_SUCCESS != ret){
 		return ERROR_FAILED;
-	}
+	} */
 
     /* 设置启动注册包
 	REG:SERIAL_NUMBER^ */
@@ -426,7 +436,7 @@ static int _gsmEstablishIPConn(void)
     类型为TCP
     域名或IP
     端口
-    自动重连，但不发送Keeplive
+    自动重连且发送Keeplive
     客户端模式
     */
     snprintf(buf, sizeof(buf), "AT+CIPSTART=\"TCP\",\"%s\",%hu,2,C\r\n", 
